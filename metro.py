@@ -64,8 +64,10 @@ def scrape_product_info(url):
                 classes = stock_element.get('class', [])
                 if 'BigProductStockBalanceLabel_in_stock' in classes:
                     stock = 'instock'
+                elif 'BigProductStockBalanceLabel_low_stock' in classes:
+                    stock='low'
                 elif 'BigProductStockBalanceLabel_running_out' in classes:
-                    stock = 'low'
+                    stock = 'very low'
 
             # Extract the prices
             discounted_price_element = soup.find('span', {'data-marker': 'Discounted Price'})
@@ -107,11 +109,6 @@ def scrape_product_info(url):
             else:
                 origin_country = None
 
-            # TODO: Extract the METRO product category
-            # tag = soup.find_all("li", {"class": "jsx-2504a5e7448e00b2 Breadcrumbs__item icon-caret-bottom"})
-            # print(tag)
-            # product_category = tag.find("span").text
-
             # Return the data as a dictionary
             return {
                 'URL': url,
@@ -122,8 +119,7 @@ def scrape_product_info(url):
                 'Discounted Price': discounted_price,
                 'Trademark': trademark,
                 'Producer': producer,
-                'Origin Country': origin_country #,
-                # 'Product Category 1': product_category
+                'Origin Country': origin_country
             }
         except requests.RequestException as e:
             logging.error(f'Attempt {tries} failed to retrieve the page: {url} - {e}')
@@ -148,7 +144,7 @@ def save_batch_data(batch_data, output_filename):
     with open(output_filename, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=[
             'URL', 'Title', 'Weight', 'Stock', 'Old Price', 'Discounted Price', 
-            'Trademark', 'Producer', 'Origin Country', 'Scrape Date'#, 'Product Category 1'
+            'Trademark', 'Producer', 'Origin Country', 'Scrape Date'
         ])
         writer.writerows(batch_data)
     logging.info(f'Saved a batch of {len(batch_data)} products to {output_filename}')
@@ -169,7 +165,7 @@ def scrape_all_products(sitemap_url, products_filename, output_filename, max_wor
             with open(output_filename, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.DictWriter(file, fieldnames=[
                     'URL', 'Title', 'Weight', 'Stock', 'Old Price', 'Discounted Price', 
-                    'Trademark', 'Producer', 'Origin Country', 'Scrape Date'#, 'Product Category 1'
+                    'Trademark', 'Producer', 'Origin Country', 'Scrape Date'
                 ])
                 writer.writeheader()
 
