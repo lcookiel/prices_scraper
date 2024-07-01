@@ -8,8 +8,10 @@ import time
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def fetch_sitemap(url):
     try:
@@ -20,15 +22,18 @@ def fetch_sitemap(url):
         logging.error(f'Failed to retrieve the sitemap: {e}')
         return None
 
+
 def parse_sitemap(xml_content):
     soup = BeautifulSoup(xml_content, 'xml')
     urls = [loc.get_text() for loc in soup.find_all('loc')]
     return urls
 
+
 def save_urls_to_csv(urls, filename):
     df = pd.DataFrame(urls, columns=['URL'])
     df.to_csv(filename, index=False)
     logging.info(f'URLs saved to {filename}')
+
 
 def scrape_product_info(url):
     headers = {
@@ -69,24 +74,43 @@ def scrape_product_info(url):
             old_price_element = soup.find('span', {'data-marker': 'Old Price'})
             old_price = old_price_element.get_text() if old_price_element else discounted_price
 
-
             # Extract the trademark
-            trademark_element = soup.find('li', {'data-marker': 'Taxon tm', 'class': 'jsx-118055876e04a4fd BigProductCardDescription__infoEntry'})
-            trademark = trademark_element.find('span', {'class': 'jsx-118055876e04a4fd BigProductCardDescription__link'}).get_text() if trademark_element else None
-            
+            trademark_element = soup.find('li', {'data-marker': 'Taxon tm'})
+            if trademark_element:
+                span_elements = trademark_element.find_all('span')
+                if len(span_elements) > 1:
+                    trademark = span_elements[1].get_text()
+                else:
+                    trademark = None
+            else:
+                trademark = None
+
             # Extract the producer
-            producer_element = soup.find('li', {'data-marker': 'Taxon pr', 'class': 'jsx-118055876e04a4fd BigProductCardDescription__infoEntry'})
-            producer = producer_element.find('span', {'class': 'jsx-118055876e04a4fd BigProductCardDescription__entryValue'}).get_text() if producer_element else None
+            producer_element = soup.find('li', {'data-marker': 'Taxon pr'})
+            if producer_element:
+                span_elements = producer_element.find_all('span')
+                if len(span_elements) > 1:
+                    producer = span_elements[1].get_text()
+                else:
+                    producer = None
+            else:
+                producer = None
 
             # Extract the origin country
-            origin_country_element = soup.find('li', {'data-marker': 'Taxon country', 'class': 'jsx-118055876e04a4fd BigProductCardDescription__infoEntry'})
-            origin_country = origin_country_element.find('span', {'class': 'jsx-118055876e04a4fd BigProductCardDescription__link'}).get_text() if origin_country_element else None
+            origin_country_element = soup.find('li', {'data-marker': 'Taxon country'})
+            if origin_country_element:
+                span_elements = origin_country_element.find_all('span')
+                if len(span_elements) > 1:
+                    origin_country = span_elements[1].get_text()
+                else:
+                    origin_country = None
+            else:
+                origin_country = None
 
             # TODO: Extract the METRO product category
             # tag = soup.find_all("li", {"class": "jsx-2504a5e7448e00b2 Breadcrumbs__item icon-caret-bottom"})
             # print(tag)
             # product_category = tag.find("span").text
-
 
             # Return the data as a dictionary
             return {
@@ -107,6 +131,7 @@ def scrape_product_info(url):
                 logging.error(f'All attempts to retrieve the page failed: {url}')
                 return None
 
+
 def get_processed_urls(output_filename):
     if os.path.exists(output_filename):
         df = pd.read_csv(output_filename)
@@ -118,6 +143,7 @@ def get_processed_urls(output_filename):
             return set()
     return set()
 
+
 def save_batch_data(batch_data, output_filename):
     with open(output_filename, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=[
@@ -126,6 +152,7 @@ def save_batch_data(batch_data, output_filename):
         ])
         writer.writerows(batch_data)
     logging.info(f'Saved a batch of {len(batch_data)} products to {output_filename}')
+
 
 def scrape_all_products(sitemap_url, products_filename, output_filename, max_workers=5):
     sitemap_content = fetch_sitemap(sitemap_url)
@@ -173,6 +200,7 @@ def scrape_all_products(sitemap_url, products_filename, output_filename, max_wor
         # Save any remaining data in the last batch
         if batch_data:
             save_batch_data(batch_data, output_filename)
+
 
 if __name__ == "__main__":
     SITEMAP_URL = 'https://metro.zakaz.ua/products-sitemap-uk.xml'
