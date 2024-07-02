@@ -29,12 +29,6 @@ def parse_sitemap(xml_content):
     return urls
 
 
-def save_urls_to_csv(urls, filename):
-    df = pd.DataFrame(urls, columns=['URL'])
-    df.to_csv(filename, index=False)
-    logging.info(f'URLs saved to {filename}')
-
-
 def scrape_product_info(url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -150,11 +144,10 @@ def save_batch_data(batch_data, output_filename):
     logging.info(f'Saved a batch of {len(batch_data)} products to {output_filename}')
 
 
-def scrape_all_products(sitemap_url, products_filename, output_filename, max_workers=5):
+def scrape_all_products(sitemap_url, output_filename, max_workers=5):
     sitemap_content = fetch_sitemap(sitemap_url)
     if sitemap_content:
         urls = parse_sitemap(sitemap_content)
-        save_urls_to_csv(urls, products_filename)
 
         processed_urls = get_processed_urls(output_filename)
         total_urls = len(urls)
@@ -200,10 +193,9 @@ def scrape_all_products(sitemap_url, products_filename, output_filename, max_wor
 
 if __name__ == "__main__":
     SITEMAP_URL = 'https://metro.zakaz.ua/products-sitemap-uk.xml'
-    PRODUCTS_FILENAME = 'metro_products.csv'
     OUTPUT_FILENAME = 'product_info.csv'
     
     start_time = time.time()
-    scrape_all_products(SITEMAP_URL, PRODUCTS_FILENAME, OUTPUT_FILENAME)
+    scrape_all_products(SITEMAP_URL, OUTPUT_FILENAME)
     end_time = time.time()
     logging.info(f'Scraping completed in {end_time - start_time:.2f} seconds')
