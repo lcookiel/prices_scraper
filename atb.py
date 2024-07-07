@@ -90,7 +90,6 @@ def scrape_product_info(url):
                 name_element = item.find('div', class_='product-characteristics__name')
                 if name_element and name_element.get_text() == 'Країна':
                     value_element = item.find('div', class_='product-characteristics__value')
-                    print(value_element)
                     if value_element:
                         origin_country = value_element.get_text()
                     break
@@ -216,7 +215,7 @@ def scrape_all_products(sitemap_url, output_filename, max_workers=5):
 
 if __name__ == "__main__":
     SITEMAP_URL = 'https://www.atbmarket.com/sitemap_products.xml'
-    OUTPUT_FILENAME = 'product_info.csv'
+    OUTPUT_FILENAME = 'atb_products.csv'
     
     start_time = time.time()
     scrape_all_products(SITEMAP_URL, OUTPUT_FILENAME)

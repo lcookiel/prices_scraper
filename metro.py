@@ -193,7 +193,7 @@ def scrape_all_products(sitemap_url, output_filename, max_workers=5):
 
 if __name__ == "__main__":
     SITEMAP_URL = 'https://metro.zakaz.ua/products-sitemap-uk.xml'
-    OUTPUT_FILENAME = 'product_info.csv'
+    OUTPUT_FILENAME = 'metro_products.csv'
     
     start_time = time.time()
     scrape_all_products(SITEMAP_URL, OUTPUT_FILENAME)
