@@ -215,7 +215,8 @@ def scrape_all_products(sitemap_url, output_filename, max_workers=5):
 
 if __name__ == "__main__":
     SITEMAP_URL = 'https://www.atbmarket.com/sitemap_products.xml'
-    OUTPUT_FILENAME = 'atb_products.csv'
+    current_date = datetime.now().strftime('%Y%m%d')
+    OUTPUT_FILENAME = f'atb{current_date}.csv'
     
     start_time = time.time()
     scrape_all_products(SITEMAP_URL, OUTPUT_FILENAME)
