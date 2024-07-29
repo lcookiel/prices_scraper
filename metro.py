@@ -105,15 +105,15 @@ def scrape_product_info(url):
 
             # Return the data as a dictionary
             return {
-                'URL': url,
-                'Title': title,
-                'Weight': weight,
-                'Stock': stock,
-                'Old Price': old_price,
-                'Discounted Price': discounted_price,
-                'Trademark': trademark,
-                'Producer': producer,
-                'Origin Country': origin_country
+                'url': url,
+                'title': title,
+                'weight': weight,
+                'stock': stock,
+                'old_price': old_price,
+                'discounted_price': discounted_price,
+                'trademark': trademark,
+                'producer': producer,
+                'origin_country': origin_country
             }
         except requests.RequestException as e:
             logging.error(f'Attempt {tries} failed to retrieve the page: {url} - {e}')
@@ -126,10 +126,10 @@ def get_processed_urls(output_filename):
     if os.path.exists(output_filename):
         df = pd.read_csv(output_filename)
         logging.debug(f'Columns in the output file: {df.columns.tolist()}')
-        if 'URL' in df.columns:
-            return set(df['URL'])
+        if 'url' in df.columns:
+            return set(df['url'])
         else:
-            logging.error(f'URL column not found in {output_filename}')
+            logging.error(f'url column not found in {output_filename}')
             return set()
     return set()
 
@@ -137,8 +137,8 @@ def get_processed_urls(output_filename):
 def save_batch_data(batch_data, output_filename):
     with open(output_filename, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=[
-            'URL', 'Title', 'Weight', 'Stock', 'Old Price', 'Discounted Price', 
-            'Trademark', 'Producer', 'Origin Country', 'Scrape Date'
+            'url', 'title', 'weight', 'stock', 'old_price', 'discounted_price', 
+            'trademark', 'producer', 'origin_country', 'scrape_date'
         ])
         writer.writerows(batch_data)
     logging.info(f'Saved a batch of {len(batch_data)} products to {output_filename}')
@@ -153,12 +153,16 @@ def scrape_all_products(sitemap_url, output_filename, max_workers=5):
         total_urls = len(urls)
         remaining_urls = [url for url in urls if url not in processed_urls]
 
+        # Record the number of total urls to a separate file (for server running purposes)
+        with open("n_rows_metro.txt", 'w') as f:
+            f.write(str(total_urls))
+
         # Initialize the CSV file with headers if starting from scratch
         if not os.path.exists(output_filename):
             with open(output_filename, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.DictWriter(file, fieldnames=[
-                    'URL', 'Title', 'Weight', 'Stock', 'Old Price', 'Discounted Price', 
-                    'Trademark', 'Producer', 'Origin Country', 'Scrape Date'
+                    'url', 'title', 'weight', 'stock', 'old_price', 'discounted_price', 
+                    'trademark', 'producer', 'origin_country', 'scrape_date'
                 ])
                 writer.writeheader()
 
@@ -174,7 +178,7 @@ def scrape_all_products(sitemap_url, output_filename, max_workers=5):
                 try:
                     data = future.result()
                     if data:
-                        data['Scrape Date'] = datetime.now().strftime('%Y-%m-%d')
+                        data['scrape_date'] = datetime.now().strftime('%Y-%m-%d')
                         batch_data.append(data)
                         processed_urls.add(url)
                         completed_urls += 1
